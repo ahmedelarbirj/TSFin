@@ -1,8 +1,9 @@
+
 ##########################################################
 #         R code for chapter 1
 ##########################################################
 
-# Exercce
+# Exercice
 
 psi_i=ARMAtoMA(ar=0.4,lag.max = 10)  # représentation de Wald
 psi_i
@@ -62,18 +63,6 @@ fNonlinear::bdsTest(na.omit(residd))@test
 # PR Test
 
 NTS::PRnd(na.omit(residd))
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
