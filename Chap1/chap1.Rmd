@@ -1,0 +1,422 @@
+---
+title: 'Econométrie de la finance'
+subtitle: 'Chapitre 1: Introduction'
+author: "Mohamed Essaied Hamrita"
+date: "Octobre 2021"
+bibliography: chp1.bib
+output:
+  ioslides_presentation:
+    incremental: yes
+    widescreen: yes
+    smaller: yes
+    #css: styles.css
+---
+<style type="text/css">
+body p {
+  color: #000000;
+}
+slides > slide.title-slide hgroup h1 {
+  font-weight: bold;
+  font-size: 26pt;
+  color: red;
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+</style>
+
+    
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(icons)
+```
+```{r, echo=FALSE}
+colFmt <- function(x,color) {
+  
+  outputFormat <- knitr::opts_knit$get("rmarkdown.pandoc.to")
+  
+  if(outputFormat == 'latex') {
+    ret <- paste("\\textcolor{",color,"}{",x,"}",sep="")
+  } else if(outputFormat == 'html') {
+    ret <- paste("<font color='",color,"'>",x,"</font>",sep="")
+  } else {
+    ret <- x
+  }
+
+  return(ret)
+}
+```
+
+## Matériels et outils
+
+- Les supports pédagogiques sont déposés au dépôt de `r fontawesome::fa("github","black", height="1em")` (https://github.com/Hamrita/TSFin.git).
+
+- Logiciel statistique: `r fontawesome::fa("r-project", "steelblue", height="1em")` (https://www.r-project.org/)
+
+- IDE: RStudio (https://www.rstudio.com/products/rstudio/download/)
+
+## Quelques concepts de bases
+
+- Un processus $x_t$ est `r colFmt("__une série temporelle discrète__", "red")` si $x_t$ est une variable aléatoire et l'indice $t$ est dénombrable.
+
+- Une série observée est une réalisation de ce processus stochastique.
+
+- Un processus $x_t$ est `r colFmt("__strictement stationnaire__","red")` si sa distribution est `r colFmt("__invariante__", "red")` dans le temps. Mathématiquement parlant, $x_t$ est strictement stationnaire si pour tout indice de temps arbitraire $\{t_1, t_2,\ldots, t_m\}$, où $m > 0$, et pour un entier $k$ fixé, $F(x_{t_1},\ldots,x_{t_m})=F({x_{t_{1}+k}, \ldots, x_{t_{m}+k}})$.
+
+- Une série temporelle est `r colFmt("__faiblement stationnaire__","red")` si les deux premiers moments de $x_t$ existent et __invariants__ dans le temps. Statistiquement parlant, $\mathbb{E}(x_t)=m$ et $Cov(x_t,x_{t+k})=\gamma(k)$, où $\mathbb{E}()$ est l'espérance mathématique, $Cov$ est la covariance et $\gamma(k)$, dite fonction d'auto-covariance d'ordre $k$ vérifiant $\gamma(-k)=\gamma(k)$, $\forall k \in \mathbb{Z}$.
+
+- Une séquence de variables aléatoires indépendantes et identiquement distribuées est strictement stationnaire. 
+
+## Séries temporelles linéaires
+
+Un processus $x_t$ est dit `r colFmt("__linéaire__","blue")` s'il peut s'écrire sous la forme: (représentation de Wald)
+$$
+x_t=m+\sum_{k=-\infty}^{+\infty} \psi_k e_{t-k}
+$$
+où $m$ et $\psi_k$ sont deux réels avec $\psi_0=1$ et $\displaystyle \sum_{k=-\infty}^{+\infty} |\psi_k| < \infty$ et $\{e_t\}$ est une séquence aléatoire $iid$ de moyenne nulle et admettant une distribution. Dans la pratique, on s'intéresse aux séries temporelles unilatérales
+
+$$
+x_t=m+\sum_{k=0}^{+\infty} \psi_k e_{t-k}  
+$$
+
+La série temporelle linéaire dans l'équation précédente est faiblement stationnaire si nous supposons en outre que $\mathbb{V}(e_t)=\sigma^2_e$.
+
+Dans ce cas, on a $\mathbb{E}(x_t)=m$, $\mathbb{V}(x_t)=\displaystyle \sigma^2_e\sum_{k=0}^\infty \psi_k^2$ et $\gamma(k)=\sigma^2_e\displaystyle\sum_{i=0}^\infty\psi_i\psi_{i+k}$.
+
+Le modèle ARIMA est un modèle célèbre qui admet cette écriture. Dans ce cas, les coefficients $\psi_i$ se calculent comme suit:
+
+$$
+\psi_i=\theta_i+\sum_{0 \leq k \leq i}\phi_k \psi_{i-k}\;;\qquad 0 \leq i < \max(p,q+1)
+$$
+$$
+\psi_i=\sum_{0 \leq k \leq i}\phi_k \psi_{i-k}\;;\qquad  i \geq \max(p,q+1)
+$$
+
+## Exercice
+
+Soit $x_t \sim AR(1)$ tel que $x_t=0.4 x_{t-1}+e_t$;  $\quad e_t\stackrel{iid}{\sim}BB(0,1)$
+
+ 1. Déterminer la représentation de Wald et donner les valeurs de $\psi_i$ pour $i=0,1,2,\ldots,10$.
+ 2. En déduire l'expression de $\gamma(k)$ en fonction de $k$. Donner les valeurs de $\gamma(k)$ pour $k=0,1,\ldots, 10$.
+ 
+```{r ex1_1, echo = TRUE, comment=NA}
+psi_i=ARMAtoMA(ar=0.4,lag.max = 10)  # représentation de Wald
+psi_i
+```
+
+```{r ex1_2, echo=TRUE, comment=""}
+ARMAacv=function(ar=0,ma=0,n=10){
+  p=c(1,ARMAtoMA(ar,ma,n+10000))
+  gg=NULL
+  for(ii in 1:n) gg[ii]=sum(p[1:10000]*p[(ii+1):(10000+ii)])
+  c(sum(p^2),gg)
+}
+ARMAacv(ar=0.4,n=10)
+
+# 0.4^(0:10)*25/21
+```
+
+---
+
+- Tout processus qui ne peut pas s'écrire sous la représentation de Wald est un processus `r colFmt("__non linéaire__", "red")`.
+
+- Nous commençons par un exemple réel qui présente clairement des caractéristiques non linéaires et nécessite une modélisation non linéaire. 
+
+- On considère le cours journalier de Bitcoin `r fontawesome::fa("bitcoin","black", height="1em")` contre le dollar américain  (BTC/USD) allant de 17-09-2014 à 20-10-2021. On donne l'évolution du cours ajusté (figure à gauche) ainsi que l'évolution du rendement qui est défini par $r_t=\ln\left(\dfrac{p_t}{p_{t-1}}\right)$ où $p_t$ est le cours ajusté.
+
+---
+```{r exp1, comment=NA, warning=FALSE, message=FALSE, echo=TRUE, fig.align='center', out.width="80%",fig.height=4}
+library(quantmod); library(zoo)
+btc=getSymbols("BTC-USD", src="yahoo", from="2014-09-17",to="2021-10-20",auto.assign = FALSE)
+closedAdj=zoo(btc[,6]); rt=diff(log(closedAdj))
+par(mfrow=c(1,2), mar=c(2.5,3.8,1,1))
+plot(closedAdj, col=4, xlab=""); plot(rt,col=4, xlab="")
+```
+
+---
+
+- La figure de l'évolution des prix (à gauche) montre que la moyenne ainsi que la variance évoluent dans le temps tous les deux, donc la série est non stationnaire.
+
+- En transformant la série, $r_t=\ln(p_t)-\ln(p_{t-1})$, on voit bien que la moyenne semble être stable dans le temps. Tandis que la variance semble être variable dans le temps et de manière asymétrique. Ce qui suggère à son tour que les rendements du Bitcoin __ne sont pas linéaires__. 
+
+---
+
+```{r exp1_2, comment=NA, warning=FALSE, message=FALSE, echo=TRUE, fig.align='center', out.width="80%",fig.height=4.25}
+par(mfrow=c(2,2), mar=c(2.5,3.8,1,1))
+acf(closedAdj, 40,na.action = na.pass, col=4, xlab=""); acf(rt, 40,na.action = na.pass, col=4, xlab="")
+pacf(closedAdj,40,na.action = na.pass,col=4, xlab=""); pacf(rt,40,na.action = na.pass,col=4, xlab="")
+```
+
+
+## Propriétés des séries financières
+
+- `r colFmt("grande variété","red")` des séries utilisées (prix d'action, taux d'intérêt, taux de change etc.), importance de la fréquence d'observation (seconde, minute, heure, jour, etc), disponibilité d'échantillons de très grande taille.
+
+- existence de régularités statistiques ("`r colFmt("faits stylisés","red")`") communes à un très grand nombre de séries financières et difficiles à reproduire artificiellement à partir de modèles stochastiques. @mandelbrot69.
+
+   - Non stationnarité des prix $p_t$
+   - Possible stationnarité des rendements.
+   - Regroupement des extrêmes (volatility clustering): On observe empiriquement que de fortes variations des rendements sont généralement suivies de fortes variations. Ce type de phénomène remet en cause l'hypothèse d'homoscédasticité.
+   - Non corrélation des rendements mais auto-corrélation des carrés.
+   - Queues de distribution épaisses: la distribution des résidus demeure leptokurtique.
+   - Asymétrie: Les baisses du cours génèrent plus de volatilité que les hausses de même amplitude (effet de levier).
+   - Saisonnalité: Les rendements présentent de nombreux phénomènes de saisonnalité (effets week end, effet janvier, etc..)
+
+## Tests de linéarité 
+
+- La flexibilité des modèles non linéaires dans l'ajustement des données peut rencontrer le problème de trouver une structure fallacieuse (spurious) dans une série chronologique donnée.
+
+- Il est donc important de vérifier la nécessité d'utiliser des modèles non linéaires. À cette fin, nous introduisons des tests de linéarité pour les données de séries temporelles. Les tests `r colFmt("__paramétriques__","red")` et `r colFmt("__non paramétriques__","red")` sont pris en compte.
+
+- Tests paramétriques:
+   - Le test de multiplicateur de Lagrange ( @engle82 ) 
+   - Le test RESET (Regression error specification test) (  @Ramsey69, @kenan85  )
+
+- Tests non paramétriques
+    - Le test McLeod-Li ( @McLi83 ) 
+    - Le test BDS ( @bds )
+    - Test de Peña-Rodríguez [@pena02; -@Pena2006]
+    
+---
+
+Tests paramétriques
+
+`r colFmt("__Le test LM:__","blue")` Il s'agit de tester l'effet ARCH (héteroscédasticité conditionnelle) proposé par @engle82. L'hypothèse nulle est: $H_0: \alpha_1 = \alpha_2 = \ldots = \alpha_m = 0$ du modèle: $e_t^2=\alpha_0+\alpha_1 e_{t-1}^2 + \alpha_2 e_{t-2}^2 + \ldots = \alpha_m e_{t-m}^2 + a_t$, $t=1,2,\ldots, T$.
+
+$e_t$ est la série des résidus obtenue suite à un modèle linéaire (ARIMA, régression linéaire).
+
+$$LM=T R^2 \stackrel{H_0}{\sim}\chi^2(m) \text{ où }R^2 \text{ est le coefficient de détermination.} $$
+
+Si $LM < \chi^2_{\alpha}(m)$, l'hypothèse nulle est acceptée; __absence d'effet ARCH__.
+
+__Remarques:__ 
+
+- Ce test est équivalent au test de Fisher;
+$$
+F=\dfrac{(SCR_0-SCR_1)/m}{SCR_1/(T-2m-1)}\stackrel{H_0}{\sim}F(m,T-2m-1)
+$$
+où $SCR_0$ et $SCR_1$ sont les sommes des carrés résiduelles sous $H_0$ et $H_1$ respectivement.
+
+- On accepte l'hypothèse nulle si p.value est supérieure à $\alpha \%$.
+
+---
+
+```{r archtest, echo=TRUE}
+archLM=function(x,p=1, disp=T){
+  # x: time series;  p: lag order; disp: display or not the result
+  mat=embed(x^2,(p+1))
+  reg=summary(lm(mat[,1]~mat[,-1]))
+  r2=reg$r.squared
+  statistic=r2*length(resid(reg))
+  cv=qchisq(0.95,p)
+  pvalue=1-pchisq(statistic,p)
+  if(disp){
+  cat("================================================\n")
+  cat("=======           ARCH LM test         =========\n")
+  cat("================================================\n")
+  cat("====   H0: no ARCH effects             =========\n\n")
+  
+  cat(" Chi-squared: ", statistic, "  df: ", p,  "  p.value: ", pvalue, 
+      "  critical value 5%: ", cv, " \n")
+  cat(" F-statistic", reg$fstatistic[1]," df:  ", reg$fstatistic[-1],"p.value: ",
+      1-pf(reg$fstatistic[1], reg$fstatistic[2],reg$fstatistic[3]), 
+      " critical value 5%: ", qf(0.95,reg$fstatistic[2], reg$fstatistic[3]), "\n")
+  }
+  return(invisible(list("Chi-squared"=statistic, "p-value"=pvalue,
+              "df"=p)))
+}
+```
+
+---
+
+Appliquons le test LM sur les rendements du Bitcoin (en supposant que $r_t=m+\epsilon_t$)
+
+```{r lm1, echo=T, comment=""}
+et=rt-mean(rt,na.rm=T)
+archLM(et, 12)
+```
+
+Le résultat montre bien __l'existence d'un effet ARCH__ sur les rendements du Bitcoin (p.value presque nulle).
+
+---
+
+`r colFmt("__RESET Test__","blue")`
+
+@Ramsey69 a proposé un test de spécification pour les modèles de régression linéaire. Ce test est aussi applicable aux modèles $AR$. Les étapes du test sont décrites comme suit:
+
+- Estimation, par MCO, le modèle: $x_t=\phi_0+\phi_1 x_{t-1}+\ldots + \phi_p x_{t-p}+\varepsilon_t$, on obtient, alors $\mathbf{\widehat{\phi}}=(\widehat{\phi}_0,\widehat{\phi}_1,\ldots, \widehat{\phi}_p)$, $\widehat{x}_t$, $e_t=\widehat{\varepsilon}_t=x_t-\widehat{x}_t$ et $SCR_0=\sum e_t^2$.
+- Estimation, par MCO, le modèle: $x_t=\alpha_0+\alpha_1 x_{t-1}+\ldots + \alpha_p x_{t-p}+ \beta_{\color{red}{1}} \widehat{x}_t^{\color{red}{2}}+\beta_{\color{red}{2}} \widehat{x}_t^{\color{red}{3}}+ \ldots +\beta_{\color{red}{s}} \widehat{x}_t^{\color{red}{s+1}}+\nu_t$, pour $s \geq 1$. En déduire $SCR_1=\sum \widehat{\nu}_t^2$.
+Le modèle est non linéaire, si $H_0: \alpha_0=\alpha_1=\ldots=\beta_1=\beta_s=0$, donc on peut faire recours au test du Fisher.
+- Calcul du statistique $F=\dfrac{(SCR_0-SCR_1)/(s+p+1)}{SCR_1/(T-2p-s-1)}\stackrel{H_0}{\sim}F(s+p+1,T-2p-s-1)$
+
+- `r colFmt("__Remarque:__","red")`
+Parce que les variables $\widehat{x}_j$ pour $j=2, \ldots, s+1$ ont tendance à être fortement corrolées avec $(x_{t-1},x_{t-2}, \ldots, x_{t-p})$ et entre elles, les composantes principales de $(\widehat{x}_t^2, \ldots, \widehat{x}_t^{s+1})$ qui ne sont pas colinéaires avec $(x_{t-1},x_{t-2}, \ldots, x_{t-p})$ sont souvent utilisées dans l'ajustement de la deuxième équation.
+
+---
+
+```{r resetTest, echo=TRUE, comment=""}
+reset.test=function(x,p=1,s=1){
+  # Estimate of AR(p)
+  xx=embed(x,(p+1))
+  mod1=lm(xx[,1]~xx[,-1])
+  scr0=sum(mod1$residuals^2)
+  xx.hat=mod1$fitted.values
+  et=mod1$residuals;  TT=length(xx.hat)
+  # Estimate of model 2
+  xxx=matrix(0,nr=TT, nc=s)
+  for(ii in 1:s)  xxx[,ii]=xx.hat^(s+1)
+  X=cbind(xx[,-1],xxx)
+  mod2=lm(et~X);  scr1=sum(mod2$residuals^2)
+  df2=TT-p-s-1 ; df1=s+p+1
+  F_stat=df2/df1*(scr0-scr1)/scr1
+  pval=pf(F_stat,df1,df2,lower.tail = F)
+  cval=qf(0.95,df1,df2)
+  dec=ifelse(pval < 0.05, "H0 is rejected", "H0 is accepted")
+  cat("=======================================\n")
+  cat("        RESET test                     \n")
+  cat("=======================================\n\n")
+  cat("      H0: the model is linear          \n\n")
+  cat("F-statistic: ", F_stat, "df: ", c(df1,df2), " p-value: ", pval, "CV 5%: ", cval,"\n")
+  cat("Decision: ", dec , "\n")
+  
+  return(invisible(list(Fstatistic=F_stat,df=c(df1,df2),p.value=pval)))
+}
+```
+
+---
+
+```{r resettest_btc, echo=TRUE, comment=""}
+reset.test(na.omit(rt), p=2,1)
+```
+
+---
+
+`r colFmt("__Keenan Test__","blue")`
+
+- @kenan85 a proposé un test de non-linéarité pour les séries temporelles qui utilise uniquement $\widehat{x}^2_t$ et modifie la deuxième étape du test RESET pour éviter la multi-colinéarité entre $\widehat{x}^2_t$ et $(x_{t-1},x_{t-2}, \ldots, x_{t-p})$. 
+- Plus précisément, la deuxième régression linéaire est divisée en deux étapes. En premier lieu, on supprime la dépendance linéaire de $\widehat{x}^2_t$ sur $(x_{t-1},x_{t-2}, \ldots, x_{t-p})$ en ajustant la régression $\widehat{x}^2_t=\alpha_0+\alpha_1 x_{t-1}+\ldots+\alpha_p x_{t-p}+v_t$ et déduire les résidus $\widehat{v}_t$.
+- En second lieu, on considère le modèle $e_t = \gamma \widehat{v}_t + u_t$ pour obtenir la somme des carrées $SCR_0=\sum\widehat{u}^2_t$ afin de tester l'hypothèse nulle $H0: \gamma =0$
+
+---
+
+
+```{r kenTest, echo=TRUE, comment=""}
+keenan.test=function(x,p=1){
+  # Estimate of AR(p)
+  xx=embed(x,(p+1))
+  mod1=lm(xx[,1]~xx[,-1])
+  xx.hat=mod1$fitted.values
+  et=mod1$residuals
+  # Estimate of model 2
+  # (i)
+  mod21=lm(xx.hat^2~xx[,-1])
+  vt=mod21$residuals
+  mod22=lm(et ~ -1+vt)
+  F_stat=summary(mod22)$fstatistic[1]
+  df=summary(mod22)$fstatistic[-1]
+  pval=pf(F_stat,df[1],df[2],lower.tail = F)
+  cval=qf(0.95,df[1],df[2])
+  dec=ifelse(pval < 0.05, "H0 is rejected", "H0 is accepted")
+  cat("=======================================\n")
+  cat("        Keenan test                    \n")
+  cat("=======================================\n")
+  cat("      H0: the model is linear          \n\n")
+  print(summary(mod22)$coefficients)
+  cat("\n\nF-statistic: ", F_stat, "df: ", c(df), " p-value: ", pval, "CV 5%: ", cval,"\n")
+  cat("Decision: ", dec , "\n")
+  
+  return(invisible(list(Fstatistic=F_stat,df=c(df),p.value=pval)))
+}
+```
+
+---
+
+```{r Ktest, echo=TRUE, comment=""}
+keenan.test(na.omit(rt),2)
+```
+
+---
+
+`r colFmt("__Le test de McLeod-Li __","blue")` 
+
+- Une statistique de type test-portemanteau, basée sur la fonction d'auto-corrélation des carrés résiduels obtenus à partir d'un modèle ARMA, a été proposée par @McLi83. L'idée est d'appliquer la statistique de Ljung-Box aux carrés des résidus d'un modèle $ARMA(p,q)$ pour vérifier l'inadéquation du modèle. Par conséquent, la statistique de test est
+$$
+Q(m)=n(n+2)\sum_{i=1}^n\dfrac{\widehat{\rho}^2_i(e^2_i)}{n-i}
+$$
+où $n$ est la taille de l'échantillon, $m$ est un nombre correctement choisi d'auto-corrélations utilisées dans le test et $e_i$ les résidus du modèle ARMA.
+- Sous $H_0$, $Q(m) \sim \chi^2(m-p-q)$.
+
+---
+
+```{r McL, echo=TRUE, comment=""}
+arma_pq=arima(rt,c(1,0,1))
+resid2=arma_pq$residuals^2
+m=1L:7L; Q=NULL ; pval=NULL
+for (i in m) { Q[i]=Box.test(resid2,i,"Ljung-Box")$statistic
+pval[i]= Box.test(resid2,i,"Ljung-Box")$p.value
+}
+tab=rbind(m,Q,p.value=pval)
+print(tab, digits=4)
+
+```
+---
+
+- `r colFmt("__Le test BDS :__","blue")` Le test BDS (@bds), développé dans le cadre de la théorie du chaos, est l'un des tests de non-linéarité les plus populaires.
+- La statistique BDS est basée sur l'intégrale des corrélations. Etant donné une série temporelle $\{x_t\}$, et en posant $x_t^m=\{x_t, x_{t-1},\ldots,x_{t-m+1}\}$, l'intégrale des corrélations est donnée par:
+$$
+C_{m,T}(\epsilon)=\sum_{t < s}I_{\epsilon}x^m_t x^s_t \left\{\dfrac{2}{T_m(T_m-1)} \right\}
+$$
+où $T_m=T−(m−1)$ et $I_{\epsilon}x^m_tx^m_s$ est une fonction indicatrice égale à un si $||x^m_t-x^s_t|| < \epsilon$ et égale à zéro sinon avec $||.||$ désigne la norme supérieure.
+- La statistique de BDS est donnée par:
+$$
+W_{m \epsilon}=\sqrt{T}\dfrac{C_{m,T}(\epsilon)-C_{1,T}(\epsilon)^m}{s_{m,T}}
+$$
+où $s_{m,T}$ est l'écart-type estimé.
+- Sous l'hypothèse nulle, pour laquelle la série $\{x_t\}$ est considérée $iid$, @bds ont montré que $W_{m \epsilon}$ converge vers la loi normale standard.
+- Dans la pratique, le test BDS est appliqué aux résidus suite à une estimation d'un modèle linéaire.
+
+---
+
+```{r bdsT1, echo=TRUE, comment=""}
+mod=arima(rt,c(1,0,1))
+residd=c(mod$residuals) ; 
+fNonlinear::bdsTest(na.omit(residd))@test
+```
+---
+
+`r colFmt("__Test de Peña-Rodríguez__","blue")` [@pena02; -@Pena2006]
+
+- Peña et Rodríguez (2002) ont proposé une statistique de test de Portemanteau qui peut être utilisée pour la vérification d'un modèle linéairement ajusté, y compris la non-linéarité dans les résidus.
+- Soit $e_t$ les résidus suite à un modèle linéaire. Soit $z_t$ une fonction de $e_t$; $z_t=e^2_t$ ou $z_t=|e_t|$. L'auto-corrélation empirique de retard $k$ de $z_t$ est:
+$$
+\widehat{\rho}_k=\dfrac{\displaystyle{\sum_{i=k+1}^T(z_{t-i}}-\overline{z})(z_t-\overline{z})}{\displaystyle{\sum_{i=1}^T}(z_t-\overline{z})^2}
+$$
+- Pour un entier positif donné, $m$, l'hypothèse nulle du test de Peña-Rodríguez est $H_0: \rho=\rho_2=\ldots=\rho_m$. La statistique est $\widehat{D}_m=T\left(1-\left|\widehat{R}_m \right|^{1/m} \right)$ où
+$$
+\widehat{R}_m=\left(\begin{array}{cccc}
+1 & \widehat{\rho}_1 & \ldots & \widehat{\rho}_m\\
+\widehat{\rho}_1 & 1 & \ldots & \widehat{\rho}_{m-1}\\
+\cdots & \cdots & \ddots & \vdots\\
+\widehat{\rho}_m & \widehat{\rho}_{m-1} & \ldots & 1
+\end{array}\right)
+$$
+
+---
+
+- En utilisant l'idée de pseudo-vraisemblance, [@Pena2006] ont modifié la statistique du test:
+$$
+\widehat{D}^*_m=-\dfrac{T}{m+1}\log\left(|\widehat{R}| \right)
+$$
+qui est distribuée asymptotiquement comme un mélange de $m$ variables aléatoires indépendantes $\chi^2(1)$. Cependant, les auteurs ont dérivé deux approximations pour simplifier le calcul. Ils ont aboutit au résultat $N\widehat{D}^*_m \sim N(0,1)$ où $N\widehat{D}^*_m$ est une approximation à $\widehat{D}^*_m$ (Eq 10 de @Pena2006).
+
+- Sous `r fontawesome::fa("r-project", "steelblue", height="1em")`, on peut faire recours à la fonction `PRnd` du package `NTS`.
+
+```{r PRnd, echo=TRUE, comment=""}
+NTS::PRnd(na.omit(residd))
+```
+
+---
+__Références__
+
