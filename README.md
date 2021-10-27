@@ -1,7 +1,7 @@
 # TSFin
 Supports pédagogiques du cours Econométrie de la finance destiné aux étudiants de la deuxième année mastère Finance &amp; Actuariat (IHEC, Sousse - Tunisie).
 
-[Initiation au logiciel R fa-r-project.svg](https://github.com/Hamrita/Statistique-Mathematique/tree/main/Initiation%20R)
+[__Initiation au logiciel R__](https://github.com/Hamrita/Statistique-Mathematique/tree/main/Initiation%20R)
 
 Chapitre 1: Introduction [html](https://rpubs.com/Sioud/827012),  [pdf](https://github.com/Hamrita/TSFin/blob/main/Chap1/Chap1_TSFin.pdf).
 
