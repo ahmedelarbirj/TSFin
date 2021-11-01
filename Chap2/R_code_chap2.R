@@ -50,9 +50,29 @@ legend("topleft",bty="n",lwd=3, col=c(2,"darkorchid3"),
 
 # Results of BTC returns estimation (ARCH(1)) with student
 
-specSt=ugarchspec(list(garchOrder=c(1,0)), list(armaOrder=c(0,0)),distribution.model = "std")
+specSt=ugarchspec(list(garchOrder=c(1,0)), list(armaOrder=c(0,0)),
+                  distribution.model = "std")
 fitst=ugarchfit(specSt,rt)
 show(fitst)
+
+# forecasting
+
+ugarchforecast(fitst, n.ahead=3)
+
+#########################################
+#    GARCH model
+#########################################
+
+spec11=ugarchspec(variance.model = list(garchOrder=c(1,1)),
+                  mean.model = list(armaOrder=c(0,0)))
+Garch11=ugarchfit(spec11,rt)
+Garch11@fit$matcoef
+
+show(Garch11)
+
+#  forecasting
+
+ugarchforecast(Garch11,n.ahead = 5)
 
 
 

@@ -283,13 +283,13 @@ pacf(rt^2,na.action = na.pass, col=4, xlab=&quot;&quot;)</pre>
 
 <p>D’après le graphique de la fonction d’auto-corrélation partielle de \(r_t^2\), on remarque bien que le modèle ARCH d’ordre 1 est approprié aux rendements du BTC. On remarque aussi, que les pacf d’ordres 4 et 7 sont aussi significativement différents de zéro.</p>
 
-<p>Déterminons les valeurs des critères d’information pour les modèles ARCH(1) et ARCH(4). (Lors de la modélisation GARCH, on ne dépasse pas l’ordre 5).</p>
+<p>Déterminons les valeurs des critères d’information pour les modèles ARCH(1) et ARCH(4).</p>
 
 <p>Sous R, il existe plusieurs packages permettant l’estimation des modèles GARCH tels que <code>tseries</code>, <code>fGarch</code>, <code>rugarch</code>.</p>
 
-<p>Ici, nous décrivons l’utilisation du package <code>rugarch</code>. Pour l’estimation du modèle ARCH, nous devons spécifier le modèle à estimer en donnant les ordres des différents modèles (mean and variance equations).</p>
+<p>Ici, nous décrivons l’utilisation des packages <code>fGarch</code> et <code>rugarch</code>. Pour l’estimation du modèle ARCH, nous devons spécifier le modèle à estimer en donnant les ordres des différents modèles (mean and variance equations).</p>
 
-<p>La fonction est <code>ugarchspec</code> et prend comme arguments principaux <code>variance.model</code> et <code>mean.model</code>. Ces deux arguments sont des listes.</p>
+<p>La fonction à utiliser est <code>ugarchspec</code> (<code>rugarch</code>) et prend comme arguments principaux <code>variance.model</code>, <code>mean.model</code> et <code>distribution.model</code>. Les deux premiers arguments sont des listes et le toisième est une chaîne de caractère qui peut être <code>&quot;norm&quot;</code>, <code>&quot;std&quot;</code>, <code>&quot;sstd</code> <code>&quot;ged&quot;</code> ou <code>sged</code>.</p>
 
 </article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
 
@@ -439,7 +439,20 @@ Adjusted Pearson Goodness-of-Fit Test:
 4    50     12052            0
 
 
-Elapsed time : 0.2114351 </pre>
+Elapsed time : 1.2755 </pre>
+
+</article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
+
+<ul class = 'build'>
+<li>Le modèle estimé est alors:</li>
+</ul>
+
+<p>\[
+\begin{cases}
+X_t=0.1775+\sigma_t \varepsilon_t\\
+\sigma^2_t=1.4702 \times 10^{-6}+0.56658\; X^2_{t-1}
+\end{cases}
+\]</p>
 
 </article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
 
@@ -555,252 +568,358 @@ Adjusted Pearson Goodness-of-Fit Test:
 4    50    103.17    9.845e-06
 
 
-Elapsed time : 0.497638 </pre>
+Elapsed time : 0.5465689 </pre>
 
 </article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
+
+<p><strong>Diagnostique du modèle estimé</strong></p>
 
 <ul class = 'build'>
 <li><p>Pour un modèle ARCH bien approprié, les erreurs standards \(\widetilde{\varepsilon}_t=\frac{\varepsilon_t}{\sigma_t}\) doivent être \(iid\). La statistique de Ljung-Box peut être appliqué sur les erreurs standards (\(\widetilde{\varepsilon}_t\)) pour examiner l’équation de la moyenne conditionnelle et sur leurs carrés (\(\widetilde{\varepsilon}_t^2\)) pour examiner l’équation de la variance conditionnelle.</p></li>
+<li><p>Lest tests de stochasticité (randomness tests) peuvent être aussi appliqué tels que le test BDS, run test, etc…</p></li>
 <li><p>Le package <code>rugarch</code> utilise plutôt les statistiques de Ljung-Box pondérée et LM-ARCH pondérée proposé par <span class="cite">(Fisher and Gallagher 2012)</span></p></li>
-</ul>
-
-</article></slide><slide class=""><hgroup><h2>Propriétés des séries financières</h2></hgroup><article  id="propriétés-des-séries-financières" class="smaller ">
-
-<ul class = 'build'>
-<li><p><font color='red'>grande variété</font> des séries utilisées (prix d’action, taux d’intérêt, taux de change etc.), importance de la fréquence d’observation (seconde, minute, heure, jour, etc), disponibilité d’échantillons de très grande taille.</p></li>
-<li><p>existence de régularités statistiques (&ldquo;<font color='red'>faits stylisés</font>&rdquo;) communes à un très grand nombre de séries financières et difficiles à reproduire artificiellement à partir de modèles stochastiques. <span class="cite">(<strong>mandelbrot69?</strong>)</span>.</p>
-
-<ul class = 'build'>
-<li>Non stationnarité des prix \(p_t\)</li>
-<li>Possible stationnarité des rendements.</li>
-<li>Regroupement des extrêmes (volatility clustering): On observe empiriquement que de fortes variations des rendements sont généralement suivies de fortes variations. Ce type de phénomène remet en cause l’hypothèse d’homoscédasticité.</li>
-<li>Non corrélation des rendements mais auto-corrélation des carrés.</li>
-<li>Queues de distribution épaisses: la distribution des résidus demeure leptokurtique.</li>
-<li>Asymétrie: Les baisses du cours génèrent plus de volatilité que les hausses de même amplitude (effet de levier).</li>
-<li>Saisonnalité: Les rendements présentent de nombreux phénomènes de saisonnalité (effets week end, effet janvier, etc..)</li>
-</ul></li>
-</ul>
-
-</article></slide><slide class=""><hgroup><h2>Tests de linéarité</h2></hgroup><article  id="tests-de-linéarité" class="smaller ">
-
-<ul class = 'build'>
-<li><p>La flexibilité des modèles non linéaires dans l’ajustement des données peut rencontrer le problème de trouver une structure fallacieuse (spurious) dans une série chronologique donnée.</p></li>
-<li><p>Il est donc important de vérifier la nécessité d’utiliser des modèles non linéaires. À cette fin, nous introduisons des tests de linéarité pour les données de séries temporelles. Les tests <font color='red'><strong>paramétriques</strong></font> et <font color='red'><strong>non paramétriques</strong></font> sont pris en compte.</p></li>
-<li><p>Tests paramétriques:</p>
-
-<ul class = 'build'>
-<li>Le test de multiplicateur de Lagrange ( <span class="cite">Engle (1982)</span> )</li>
-<li>Le test RESET (Regression error specification test) ( <span class="cite">(<strong>Ramsey69?</strong>)</span>, <span class="cite">(<strong>kenan85?</strong>)</span> )</li>
-</ul></li>
-<li><p>Tests non paramétriques</p>
-
-<ul class = 'build'>
-<li>Le test McLeod-Li ( <span class="cite">(<strong>McLi83?</strong>)</span> )</li>
-<li>Le test BDS ( <span class="cite">(<strong>bds?</strong>)</span> )</li>
-<li>Test de Peña-Rodríguez <span class="cite">(<strong>pena02?</strong>; <strong>Pena2006?</strong>)</span></li>
-</ul></li>
+<li><p>Le package <code>fGarch</code> utilise les statistiques de Ljung-Box et LM-ARCH standards sur les erreurs standards et leurs carrés.</p></li>
 </ul>
 
 </article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
 
-<p>Tests paramétriques</p>
+<pre class = 'prettyprint lang-r'>library(fGarch)
+fitst2=garchFit(~garch(1,0),rt, cond.dist = &quot;std&quot;, trace = F )</pre>
 
-<p><font color='blue'><strong>Le test LM:</strong></font> Il s’agit de tester l’effet ARCH (héteroscédasticité conditionnelle) proposé par <span class="cite">Engle (1982)</span>. L’hypothèse nulle est: \(H_0: \alpha_1 = \alpha_2 = \ldots = \alpha_m = 0\) du modèle: \(e_t^2=\alpha_0+\alpha_1 e_{t-1}^2 + \alpha_2 e_{t-2}^2 + \ldots = \alpha_m e_{t-m}^2 + a_t\), \(t=1,2,\ldots, T\).</p>
+<pre >Warning: Using formula(x) is deprecated when x is a character vector of length &gt; 1.
+  Consider formula(paste(x, collapse = &quot; &quot;)) instead.</pre>
 
-<p>\(e_t\) est la série des résidus obtenue suite à un modèle linéaire (ARIMA, régression linéaire).</p>
+<pre class = 'prettyprint lang-r'>fitst2@fit$matcoef   # fGarch</pre>
 
-<p>\[LM=T R^2 \stackrel{H_0}{\sim}\chi^2(m) \text{ où }R^2 \text{ est le coefficient de détermination.} \]</p>
+<pre >          Estimate   Std. Error   t value     Pr(&gt;|t|)
+mu     0.002290206 0.0004739852  4.831808 1.352984e-06
+omega  0.002509288 0.0008199825  3.060172 2.212096e-03
+alpha1 0.999999990 0.3677348660  2.719350 6.541026e-03
+shape  2.286381480 0.1179821323 19.379049 0.000000e+00</pre>
 
-<p>Si \(LM &lt; \chi^2_{\alpha}(m)\), l’hypothèse nulle est acceptée; <strong>absence d’effet ARCH</strong>.</p>
+<pre class = 'prettyprint lang-r'>fitst@fit$matcoef    # rugarch</pre>
+
+<pre >          Estimate   Std. Error   t value     Pr(&gt;|t|)
+mu     0.002287490 0.0004738717  4.827234 1.384422e-06
+omega  0.002465219 0.0008201576  3.005787 2.648943e-03
+alpha1 0.998999883 0.3808058193  2.623384 8.706109e-03
+shape  2.291507174 0.1233687554 18.574453 0.000000e+00</pre>
+
+</article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
+
+<pre class = 'prettyprint lang-r'>summary(fitst2)</pre>
+
+<pre >
+Title:
+ GARCH Modelling 
+
+Call:
+ garchFit(formula = ~garch(1, 0), data = rt, cond.dist = &quot;std&quot;, 
+    trace = F) 
+
+Mean and Variance Equation:
+ data ~ garch(1, 0)
+&lt;environment: 0x000000003421a4d0&gt;
+ [data = rt]
+
+Conditional Distribution:
+ std 
+
+Coefficient(s):
+       mu      omega     alpha1      shape  
+0.0022902  0.0025093  1.0000000  2.2863815  
+
+Std. Errors:
+ based on Hessian 
+
+Error Analysis:
+        Estimate  Std. Error  t value Pr(&gt;|t|)    
+mu      0.002290    0.000474    4.832 1.35e-06 ***
+omega   0.002509    0.000820    3.060  0.00221 ** 
+alpha1  1.000000    0.367735    2.719  0.00654 ** 
+shape   2.286382    0.117982   19.379  &lt; 2e-16 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Log Likelihood:
+ 5135.542    normalized:  1.985902 
+
+Description:
+ Mon Nov 01 22:53:41 2021 by user: User 
+
+
+Standardised Residuals Tests:
+                                Statistic p-Value     
+ Jarque-Bera Test   R    Chi^2  36280.16  0           
+ Shapiro-Wilk Test  R    W      0.8861145 0           
+ Ljung-Box Test     R    Q(10)  21.09798  0.02042062  
+ Ljung-Box Test     R    Q(15)  22.20446  0.1025538   
+ Ljung-Box Test     R    Q(20)  29.7996   0.07316659  
+ Ljung-Box Test     R^2  Q(10)  36.2839   7.522355e-05
+ Ljung-Box Test     R^2  Q(15)  38.19344  0.0008447584
+ Ljung-Box Test     R^2  Q(20)  39.7931   0.005304967 
+ LM Arch Test       R    TR^2   36.09029  0.0003133419
+
+Information Criterion Statistics:
+      AIC       BIC       SIC      HQIC 
+-3.968710 -3.959649 -3.968715 -3.965426 </pre>
+
+</article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
+
+<p><strong>Prévision</strong></p>
+
+<ul class = 'build'>
+<li><p>Les prévisions du model ARCH est obtenues récursivement comme celles du modèle AR.</p></li>
+<li><p>La prévision à une étape est \(\sigma^2_h(1)=a_0+a_1 \varepsilon^2_h+\ldots+a_p \varepsilon^2_{h+1-p}\).</p></li>
+<li><p>La prévision à deux étapes est \(\sigma^2_h(2)=a_0+a_1 \sigma^2_h(1)+a_2\varepsilon^2_h+\ldots+a_p \varepsilon^2_{h+2-p}\).</p></li>
+<li><p>La prévision à \(k\) étapes est \(\sigma^2_h(k)=a_0+\displaystyle \sum_{j=1}^pa_j\sigma^2_h(k-j)\) où \(\sigma^2_h(k-j)=\varepsilon^2_{h+k-1}\) si \(k-j \leq 0\).</p></li>
+</ul>
+
+</article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
+
+<pre class = 'prettyprint lang-r'>predict(fitst2,3)           # fGarch</pre>
+
+<pre >  meanForecast  meanError standardDeviation
+1  0.002290206 0.05567025        0.05567025
+2  0.002290206 0.07488968        0.07488968
+3  0.002290206 0.09009857        0.09009857</pre>
+
+<pre class = 'prettyprint lang-r'>ugarchforecast(fitst, n.ahead=3)    # rugarch</pre>
+
+<pre >
+*------------------------------------*
+*       GARCH Model Forecast         *
+*------------------------------------*
+Model: sGARCH
+Horizon: 3
+Roll Steps: 0
+Out of Sample: 0
+
+0-roll forecast [T0=2021-10-20]:
+      Series   Sigma
+T+1 0.002287 0.05527
+T+2 0.002287 0.07428
+T+3 0.002287 0.08931</pre>
+
+</article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
+
+<ul class = 'build'>
+<li><p>Calcul des prévisions à la main:</p></li>
+<li><p>On a \(\widehat{\varepsilon}_T=5.9002 \times 10^{-4}\), déterminons \(\widehat{\sigma}^2_T(k)\), \(k=1,2,3\).</p></li>
+<li><p>\(\widehat{\sigma}^2_T(1)=a_0+a_1 \varepsilon^2_h=2.467 \times 10^{-3}+1\times 5.9002 \times 10^{-4}=0.00305702\).</p></li>
+<li><p>\(\widehat{\sigma}^2_T(2)=a_0+a_1 \widehat{\sigma}^2_T(1)=2.467 \times 10^{-3}+1\times 3.057 \times 10^{-3}=0.005524\).</p></li>
+<li><p>\(\widehat{\sigma}^2_T(3)=a_0+a_1 \widehat{\sigma}^2_T(2)=2.467 \times 10^{-3}+1\times 5.524 \times 10^{-3}=0.007991\).</p></li>
+</ul>
+
+</article></slide><slide class=""><hgroup><h2>Le modèle GARCH</h2></hgroup><article  id="le-modèle-garch" class="smaller ">
+
+<ul class = 'build'>
+<li><p>Le modèle GARCH (<em>Generalized ARCH</em>) est proposé par <span class="cite">(Bollerslev 1986)</span>.</p></li>
+<li><p>\(X_t\sim GARCH(p,q)\) si \(X_t=\varepsilon_t=\sigma_tZ_t\) et \(\sigma^2_t=a_0+\displaystyle \sum_{i=1}^pa_i\varepsilon^2_{t-i}+\displaystyle \sum_{j=1}^q\beta_j\sigma^2_{t-j}\) où \(Z_t \stackrel{iid}{\sim}N(0,1)\), \(a0 &gt;0\), \(a_i \geq 0\), \(\beta_j \geq 0\) et \(\displaystyle \sum_{i=1}^{\max(p,q)}(a_i+\beta_j) &lt; 1\).</p></li>
+<li><p>La dernière contrainte implique que la variance inconditionnelle de \(X_t\) est finie et que sa variance conditionnelle varie en fonction du temps.</p></li>
+<li><p>La prévision du modèle GARCH se fait similairement à un modèle ARMA. Soit \(X_t=\sigma_t Z_t\) et \(\sigma^2_t=a_0+a_1 \varepsilon^2_{t-1}+\beta_1\sigma^2_{t-1}\). On a alors:</p></li>
+<li><p>\(\sigma_h(1)=a_0+a_1\varepsilon^2_h+\beta_1\sigma^2_h\),</p></li>
+<li><p>\(\sigma_h(2)=a_0+(a_1+\beta_1)\sigma^2_h(1)+a_1\sigma^2_h(1)(Z^2_{h+1}-1)\) et puisque \(\mathbb{E}(Z^2_{h+1}-1|\mathcal{I}_h)=0\), alors \(\sigma_h(2)=a_0+(a_1+\beta_1)\sigma^2_h(1)\)</p></li>
+<li><p>Et de manière générale, \(\sigma_h(k)=a_0+(a_1+\beta_1)\sigma^2_h(k)\)</p></li>
+</ul>
+
+</article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
 
 <p><strong>Remarques:</strong></p>
 
 <ul class = 'build'>
-<li><p>Ce test est équivalent au test de Fisher; \[
-F=\dfrac{(SCR_0-SCR_1)/m}{SCR_1/(T-2m-1)}\stackrel{H_0}{\sim}F(m,T-2m-1)
-\] où \(SCR_0\) et \(SCR_1\) sont les sommes des carrés résiduelles sous \(H_0\) et \(H_1\) respectivement.</p></li>
-<li><p>On accepte l’hypothèse nulle si p.value est supérieure à \(\alpha \%\).</p></li>
+<li><p>En générale, les modèles GARCH s’appliquent aux erreurs suite à un modèle linéaire (régression linéaire, ARMA).</p></li>
+<li><p>Comme dans le modèle ARCH, les erreurs \(Z_t\) dans le modèle GARCH peuvent être de loi Student ou GED.</p></li>
+<li><p>La détermination de l’ordre \(q\) du modèle GARCH se base sur la fonction d’auto-corrélation de \(X_t^2\).</p></li>
+<li><p>Estimons les rendements du BTC à l’aide d’un modèle GARCH(1,1).</p></li>
 </ul>
 
 </article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
 
-<pre class = 'prettyprint lang-r'>archLM=function(x,p=1, disp=T){
-  # x: time series;  p: lag order; disp: display or not the result
-  mat=embed(x^2,(p+1))
-  reg=summary(lm(mat[,1]~mat[,-1]))
-  r2=reg$r.squared
-  statistic=r2*length(resid(reg))
-  cv=qchisq(0.95,p)
-  pvalue=1-pchisq(statistic,p)
-  if(disp){
-  cat(&quot;================================================\n&quot;)
-  cat(&quot;=======           ARCH LM test         =========\n&quot;)
-  cat(&quot;================================================\n&quot;)
-  cat(&quot;====   H0: no ARCH effects             =========\n\n&quot;)
-  
-  cat(&quot; Chi-squared: &quot;, statistic, &quot;  df: &quot;, p,  &quot;  p.value: &quot;, pvalue, 
-      &quot;  critical value 5%: &quot;, cv, &quot; \n&quot;)
-  cat(&quot; F-statistic&quot;, reg$fstatistic[1],&quot; df:  &quot;, reg$fstatistic[-1],&quot;p.value: &quot;,
-      1-pf(reg$fstatistic[1], reg$fstatistic[2],reg$fstatistic[3]), 
-      &quot; critical value 5%: &quot;, qf(0.95,reg$fstatistic[2], reg$fstatistic[3]), &quot;\n&quot;)
-  }
-  return(invisible(list(&quot;Chi-squared&quot;=statistic, &quot;p-value&quot;=pvalue,
-              &quot;df&quot;=p)))
-}</pre>
+<pre class = 'prettyprint lang-r'>garch11=garchFit(~garch(1,1),rt, trace = F)   #fGarch
+garch11@fit$matcoef</pre>
+
+<pre >           Estimate   Std. Error   t value     Pr(&gt;|t|)
+mu     2.182371e-03 6.334182e-04  3.445387 5.702419e-04
+omega  6.937465e-05 1.063513e-05  6.523160 6.884138e-11
+alpha1 1.339155e-01 1.523577e-02  8.789549 0.000000e+00
+beta1  8.365670e-01 1.548134e-02 54.037112 0.000000e+00</pre>
+
+<pre class = 'prettyprint lang-r'>spec11=ugarchspec(variance.model = list(garchOrder=c(1,1)),
+                  mean.model = list(armaOrder=c(0,0)))
+Garch11=ugarchfit(spec11,rt)
+Garch11@fit$matcoef</pre>
+
+<pre >           Estimate   Std. Error   t value     Pr(&gt;|t|)
+mu     2.182108e-03 6.334382e-04  3.444864 5.713467e-04
+omega  6.933686e-05 1.066024e-05  6.504249 7.808243e-11
+alpha1 1.337894e-01 1.523686e-02  8.780639 0.000000e+00
+beta1  8.366535e-01 1.551168e-02 53.937005 0.000000e+00</pre>
 
 </article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
 
-<p>Appliquons le test LM sur les rendements du Bitcoin (en supposant que \(r_t=m+\epsilon_t\))</p>
+<pre >
+Title:
+ GARCH Modelling 
 
-<p>Le résultat montre bien <strong>l’existence d’un effet ARCH</strong> sur les rendements du Bitcoin (p.value presque nulle).</p>
+Call:
+ garchFit(formula = ~garch(1, 1), data = rt, trace = F) 
 
-</article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
+Mean and Variance Equation:
+ data ~ garch(1, 1)
+&lt;environment: 0x000000003415b6a0&gt;
+ [data = rt]
 
-<p><font color='blue'><strong>RESET Test</strong></font></p>
+Conditional Distribution:
+ norm 
 
-<p><span class="cite">(<strong>Ramsey69?</strong>)</span> a proposé un test de spécification pour les modèles de régression linéaire. Ce test est aussi applicable aux modèles \(AR\). Les étapes du test sont décrites comme suit:</p>
+Coefficient(s):
+        mu       omega      alpha1       beta1  
+2.1824e-03  6.9375e-05  1.3392e-01  8.3657e-01  
 
-<ul class = 'build'>
-<li><p>Estimation, par MCO, le modèle: \(x_t=\phi_0+\phi_1 x_{t-1}+\ldots + \phi_p x_{t-p}+\varepsilon_t\), on obtient, alors \(\mathbf{\widehat{\phi}}=(\widehat{\phi}_0,\widehat{\phi}_1,\ldots, \widehat{\phi}_p)\), \(\widehat{x}_t\), \(e_t=\widehat{\varepsilon}_t=x_t-\widehat{x}_t\) et \(SCR_0=\sum e_t^2\).</p></li>
-<li><p>Estimation, par MCO, le modèle: \(x_t=\alpha_0+\alpha_1 x_{t-1}+\ldots + \alpha_p x_{t-p}+ \beta_{\color{red}{1}} \widehat{x}_t^{\color{red}{2}}+\beta_{\color{red}{2}} \widehat{x}_t^{\color{red}{3}}+ \ldots +\beta_{\color{red}{s}} \widehat{x}_t^{\color{red}{s+1}}+\nu_t\), pour \(s \geq 1\). En déduire \(SCR_1=\sum \widehat{\nu}_t^2\). Le modèle est non linéaire, si \(H_0: \alpha_0=\alpha_1=\ldots=\beta_1=\beta_s=0\), donc on peut faire recours au test du Fisher.</p></li>
-<li><p>Calcul du statistique \(F=\dfrac{(SCR_0-SCR_1)/(s+p+1)}{SCR_1/(T-2p-s-1)}\stackrel{H_0}{\sim}F(s+p+1,T-2p-s-1)\)</p></li>
-<li><p><font color='red'><strong>Remarque:</strong></font> Parce que les variables \(\widehat{x}_j\) pour \(j=2, \ldots, s+1\) ont tendance à être fortement corrolées avec \((x_{t-1},x_{t-2}, \ldots, x_{t-p})\) et entre elles, les composantes principales de \((\widehat{x}_t^2, \ldots, \widehat{x}_t^{s+1})\) qui ne sont pas colinéaires avec \((x_{t-1},x_{t-2}, \ldots, x_{t-p})\) sont souvent utilisées dans l’ajustement de la deuxième équation.</p></li>
-</ul>
+Std. Errors:
+ based on Hessian 
 
-</article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
+Error Analysis:
+        Estimate  Std. Error  t value Pr(&gt;|t|)    
+mu     2.182e-03   6.334e-04    3.445  0.00057 ***
+omega  6.937e-05   1.064e-05    6.523 6.88e-11 ***
+alpha1 1.339e-01   1.524e-02    8.790  &lt; 2e-16 ***
+beta1  8.366e-01   1.548e-02   54.037  &lt; 2e-16 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
-<pre class = 'prettyprint lang-r'>reset.test=function(x,p=1,s=1){
-  # Estimate of AR(p)
-  xx=embed(x,(p+1))
-  mod1=lm(xx[,1]~xx[,-1])
-  scr0=sum(mod1$residuals^2)
-  xx.hat=mod1$fitted.values
-  et=mod1$residuals;  TT=length(xx.hat)
-  # Estimate of model 2
-  xxx=matrix(0,nr=TT, nc=s)
-  for(ii in 1:s)  xxx[,ii]=xx.hat^(s+1)
-  X=cbind(xx[,-1],xxx)
-  mod2=lm(et~X);  scr1=sum(mod2$residuals^2)
-  df2=TT-p-s-1 ; df1=s+p+1
-  F_stat=df2/df1*(scr0-scr1)/scr1
-  pval=pf(F_stat,df1,df2,lower.tail = F)
-  cval=qf(0.95,df1,df2)
-  dec=ifelse(pval &lt; 0.05, &quot;H0 is rejected&quot;, &quot;H0 is accepted&quot;)
-  cat(&quot;=======================================\n&quot;)
-  cat(&quot;        RESET test                     \n&quot;)
-  cat(&quot;=======================================\n\n&quot;)
-  cat(&quot;      H0: the model is linear          \n\n&quot;)
-  cat(&quot;F-statistic: &quot;, F_stat, &quot;df: &quot;, c(df1,df2), &quot; p-value: &quot;, pval, &quot;CV 5%: &quot;, cval,&quot;\n&quot;)
-  cat(&quot;Decision: &quot;, dec , &quot;\n&quot;)
-  
-  return(invisible(list(Fstatistic=F_stat,df=c(df1,df2),p.value=pval)))
-}</pre>
+Log Likelihood:
+ 4910.658    normalized:  1.89894 
 
-</article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
+Description:
+ Mon Nov 01 22:53:42 2021 by user: User 
 
-</article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
 
-<p><font color='blue'><strong>Keenan Test</strong></font></p>
+Standardised Residuals Tests:
+                                Statistic p-Value    
+ Jarque-Bera Test   R    Chi^2  21488.29  0          
+ Shapiro-Wilk Test  R    W      0.8992033 0          
+ Ljung-Box Test     R    Q(10)  29.43062  0.001060873
+ Ljung-Box Test     R    Q(15)  31.22058  0.008206586
+ Ljung-Box Test     R    Q(20)  37.26145  0.01088514 
+ Ljung-Box Test     R^2  Q(10)  3.238863  0.9752308  
+ Ljung-Box Test     R^2  Q(15)  4.254493  0.9967773  
+ Ljung-Box Test     R^2  Q(20)  5.188875  0.9996305  
+ LM Arch Test       R    TR^2   3.432893  0.9916394  
 
-<ul class = 'build'>
-<li><span class="cite">(<strong>kenan85?</strong>)</span> a proposé un test de non-linéarité pour les séries temporelles qui utilise uniquement \(\widehat{x}^2_t\) et modifie la deuxième étape du test RESET pour éviter la multi-colinéarité entre \(\widehat{x}^2_t\) et \((x_{t-1},x_{t-2}, \ldots, x_{t-p})\).</li>
-<li>Plus précisément, la deuxième régression linéaire est divisée en deux étapes. En premier lieu, on supprime la dépendance linéaire de \(\widehat{x}^2_t\) sur \((x_{t-1},x_{t-2}, \ldots, x_{t-p})\) en ajustant la régression \(\widehat{x}^2_t=\alpha_0+\alpha_1 x_{t-1}+\ldots+\alpha_p x_{t-p}+v_t\) et déduire les résidus \(\widehat{v}_t\).</li>
-<li>En second lieu, on considère le modèle \(e_t = \gamma \widehat{v}_t + u_t\) pour obtenir la somme des carrées \(SCR_0=\sum\widehat{u}^2_t\) afin de tester l’hypothèse nulle \(H0: \gamma =0\)</li>
-</ul>
+Information Criterion Statistics:
+      AIC       BIC       SIC      HQIC 
+-3.794786 -3.785725 -3.794791 -3.791502 </pre>
 
 </article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
 
-<pre class = 'prettyprint lang-r'>keenan.test=function(x,p=1){
-  # Estimate of AR(p)
-  xx=embed(x,(p+1))
-  mod1=lm(xx[,1]~xx[,-1])
-  xx.hat=mod1$fitted.values
-  et=mod1$residuals
-  # Estimate of model 2
-  # (i)
-  mod21=lm(xx.hat^2~xx[,-1])
-  vt=mod21$residuals
-  mod22=lm(et ~ -1+vt)
-  F_stat=summary(mod22)$fstatistic[1]
-  df=summary(mod22)$fstatistic[-1]
-  pval=pf(F_stat,df[1],df[2],lower.tail = F)
-  cval=qf(0.95,df[1],df[2])
-  dec=ifelse(pval &lt; 0.05, &quot;H0 is rejected&quot;, &quot;H0 is accepted&quot;)
-  cat(&quot;=======================================\n&quot;)
-  cat(&quot;        Keenan test                    \n&quot;)
-  cat(&quot;=======================================\n&quot;)
-  cat(&quot;      H0: the model is linear          \n\n&quot;)
-  print(summary(mod22)$coefficients)
-  cat(&quot;\n\nF-statistic: &quot;, F_stat, &quot;df: &quot;, c(df), &quot; p-value: &quot;, pval, &quot;CV 5%: &quot;, cval,&quot;\n&quot;)
-  cat(&quot;Decision: &quot;, dec , &quot;\n&quot;)
-  
-  return(invisible(list(Fstatistic=F_stat,df=c(df),p.value=pval)))
-}</pre>
+<pre class = 'prettyprint lang-r'>show(Garch11)</pre>
+
+<pre >
+*---------------------------------*
+*          GARCH Model Fit        *
+*---------------------------------*
+
+Conditional Variance Dynamics   
+-----------------------------------
+GARCH Model : sGARCH(1,1)
+Mean Model  : ARFIMA(0,0,0)
+Distribution    : norm 
+
+Optimal Parameters
+------------------------------------
+        Estimate  Std. Error  t value Pr(&gt;|t|)
+mu      0.002182    0.000633   3.4449 0.000571
+omega   0.000069    0.000011   6.5042 0.000000
+alpha1  0.133789    0.015237   8.7806 0.000000
+beta1   0.836654    0.015512  53.9370 0.000000
+
+Robust Standard Errors:
+        Estimate  Std. Error  t value Pr(&gt;|t|)
+mu      0.002182    0.000729   2.9930 0.002762
+omega   0.000069    0.000026   2.6688 0.007612
+alpha1  0.133789    0.036614   3.6540 0.000258
+beta1   0.836654    0.027806  30.0894 0.000000
+
+LogLikelihood : 4910.635 
+
+Information Criteria
+------------------------------------
+                    
+Akaike       -3.7948
+Bayes        -3.7857
+Shibata      -3.7948
+Hannan-Quinn -3.7915
+
+Weighted Ljung-Box Test on Standardized Residuals
+------------------------------------
+                        statistic p-value
+Lag[1]                      4.384 0.03628
+Lag[2*(p+q)+(p+q)-1][2]     4.936 0.04230
+Lag[4*(p+q)+(p+q)-1][5]     7.615 0.03669
+d.o.f=0
+H0 : No serial correlation
+
+Weighted Ljung-Box Test on Standardized Squared Residuals
+------------------------------------
+                        statistic p-value
+Lag[1]                  9.538e-07  0.9992
+Lag[2*(p+q)+(p+q)-1][5] 1.372e+00  0.7714
+Lag[4*(p+q)+(p+q)-1][9] 1.936e+00  0.9125
+d.o.f=2
+
+Weighted ARCH LM Tests
+------------------------------------
+            Statistic Shape Scale P-Value
+ARCH Lag[3]    0.8783 0.500 2.000  0.3487
+ARCH Lag[5]    1.7162 1.440 1.667  0.5374
+ARCH Lag[7]    1.7975 2.315 1.543  0.7601
+
+Nyblom stability test
+------------------------------------
+Joint Statistic:  0.9753
+Individual Statistics:              
+mu     0.27019
+omega  0.36813
+alpha1 0.08751
+beta1  0.25175
+
+Asymptotic Critical Values (10% 5% 1%)
+Joint Statistic:         1.07 1.24 1.6
+Individual Statistic:    0.35 0.47 0.75
+
+Sign Bias Test
+------------------------------------
+                   t-value   prob sig
+Sign Bias           0.8603 0.3897    
+Negative Sign Bias  0.5948 0.5520    
+Positive Sign Bias  0.4544 0.6496    
+Joint Effect        1.7634 0.6229    
+
+
+Adjusted Pearson Goodness-of-Fit Test:
+------------------------------------
+  group statistic p-value(g-1)
+1    20     392.4    1.649e-71
+2    30     429.5    7.774e-73
+3    40     431.9    9.983e-68
+4    50     462.6    1.103e-68
+
+
+Elapsed time : 0.167541 </pre>
 
 </article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
-
-</article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
-
-<p><font color='blue'><strong>Le test de McLeod-Li </strong></font></p>
-
-<ul class = 'build'>
-<li>Une statistique de type test-portemanteau, basée sur la fonction d’auto-corrélation des carrés résiduels obtenus à partir d’un modèle ARMA, a été proposée par <span class="cite">(<strong>McLi83?</strong>)</span>. L’idée est d’appliquer la statistique de Ljung-Box aux carrés des résidus d’un modèle \(ARMA(p,q)\) pour vérifier l’inadéquation du modèle. Par conséquent, la statistique de test est \[
-Q(m)=n(n+2)\sum_{i=1}^n\dfrac{\widehat{\rho}^2_i(e^2_i)}{n-i}
-\] où \(n\) est la taille de l’échantillon, \(m\) est un nombre correctement choisi d’auto-corrélations utilisées dans le test et \(e_i\) les résidus du modèle ARMA.</li>
-<li>Sous \(H_0\), \(Q(m) \sim \chi^2(m-p-q)\).</li>
-</ul>
-
-</article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
-
-</article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
-
-<ul class = 'build'>
-<li><font color='blue'><strong>Le test BDS :</strong></font> Le test BDS (<span class="cite">(<strong>bds?</strong>)</span>), développé dans le cadre de la théorie du chaos, est l’un des tests de non-linéarité les plus populaires.</li>
-<li>La statistique BDS est basée sur l’intégrale des corrélations. Etant donné une série temporelle \(\{x_t\}\), et en posant \(x_t^m=\{x_t, x_{t-1},\ldots,x_{t-m+1}\}\), l’intégrale des corrélations est donnée par: \[
-C_{m,T}(\epsilon)=\sum_{t &lt; s}I_{\epsilon}x^m_t x^s_t \left\{\dfrac{2}{T_m(T_m-1)} \right\}
-\] où \(T_m=T−(m−1)\) et \(I_{\epsilon}x^m_tx^m_s\) est une fonction indicatrice égale à un si \(||x^m_t-x^s_t|| &lt; \epsilon\) et égale à zéro sinon avec \(||.||\) désigne la norme supérieure.</li>
-<li>La statistique de BDS est donnée par: \[
-W_{m \epsilon}=\sqrt{T}\dfrac{C_{m,T}(\epsilon)-C_{1,T}(\epsilon)^m}{s_{m,T}}
-\] où \(s_{m,T}\) est l’écart-type estimé.</li>
-<li>Sous l’hypothèse nulle, pour laquelle la série \(\{x_t\}\) est considérée \(iid\), <span class="cite">(<strong>bds?</strong>)</span> ont montré que \(W_{m \epsilon}\) converge vers la loi normale standard.</li>
-<li>Dans la pratique, le test BDS est appliqué aux résidus suite à une estimation d’un modèle linéaire.</li>
-</ul>
-
-</article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
-
-</article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
-
-<p><font color='blue'><strong>Test de Peña-Rodríguez</strong></font> <span class="cite">(<strong>pena02?</strong>; <strong>Pena2006?</strong>)</span></p>
-
-<ul class = 'build'>
-<li>Peña et Rodríguez (2002) ont proposé une statistique de test de Portemanteau qui peut être utilisée pour la vérification d’un modèle linéairement ajusté, y compris la non-linéarité dans les résidus.</li>
-<li>Soit \(e_t\) les résidus suite à un modèle linéaire. Soit \(z_t\) une fonction de \(e_t\); \(z_t=e^2_t\) ou \(z_t=|e_t|\). L’auto-corrélation empirique de retard \(k\) de \(z_t\) est: \[
-\widehat{\rho}_k=\dfrac{\displaystyle{\sum_{i=k+1}^T(z_{t-i}}-\overline{z})(z_t-\overline{z})}{\displaystyle{\sum_{i=1}^T}(z_t-\overline{z})^2}
-\]</li>
-<li>Pour un entier positif donné, \(m\), l’hypothèse nulle du test de Peña-Rodríguez est \(H_0: \rho=\rho_2=\ldots=\rho_m\). La statistique est \(\widehat{D}_m=T\left(1-\left|\widehat{R}_m \right|^{1/m} \right)\) où \[
-\widehat{R}_m=\left(\begin{array}{cccc}
-1 &amp; \widehat{\rho}_1 &amp; \ldots &amp; \widehat{\rho}_m\\
-\widehat{\rho}_1 &amp; 1 &amp; \ldots &amp; \widehat{\rho}_{m-1}\\
-\cdots &amp; \cdots &amp; \ddots &amp; \vdots\\
-\widehat{\rho}_m &amp; \widehat{\rho}_{m-1} &amp; \ldots &amp; 1
-\end{array}\right)
-\]</li>
-</ul>
-
-</article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
-
-<ul class = 'build'>
-<li><p>En utilisant l’idée de pseudo-vraisemblance, <span class="cite">(<strong>Pena2006?</strong>)</span> ont modifié la statistique du test: \[
-\widehat{D}^*_m=-\dfrac{T}{m+1}\log\left(|\widehat{R}| \right)
-\] qui est distribuée asymptotiquement comme un mélange de \(m\) variables aléatoires indépendantes \(\chi^2(1)\). Cependant, les auteurs ont dérivé deux approximations pour simplifier le calcul. Ils ont aboutit au résultat \(N\widehat{D}^*_m \sim N(0,1)\) où \(N\widehat{D}^*_m\) est une approximation à \(\widehat{D}^*_m\) (Eq 10 de <span class="cite">(<strong>Pena2006?</strong>)</span>).</p></li>
-<li><p>Sous <svg aria-hidden="true" role="img" viewBox="0 0 581 512" style="height:1em;width:1.13em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:steelblue;overflow:visible;position:relative;"><path d="M581 226.6C581 119.1 450.9 32 290.5 32S0 119.1 0 226.6C0 322.4 103.3 402 239.4 418.1V480h99.1v-61.5c24.3-2.7 47.6-7.4 69.4-13.9L448 480h112l-67.4-113.7c54.5-35.4 88.4-84.9 88.4-139.7zm-466.8 14.5c0-73.5 98.9-133 220.8-133s211.9 40.7 211.9 133c0 50.1-26.5 85-70.3 106.4-2.4-1.6-4.7-2.9-6.4-3.7-10.2-5.2-27.8-10.5-27.8-10.5s86.6-6.4 86.6-92.7-90.6-87.9-90.6-87.9h-199V361c-74.1-21.5-125.2-67.1-125.2-119.9zm225.1 38.3v-55.6c57.8 0 87.8-6.8 87.8 27.3 0 36.5-38.2 28.3-87.8 28.3zm-.9 72.5H365c10.8 0 18.9 11.7 24 19.2-16.1 1.9-33 2.8-50.6 2.9v-22.1z"/></svg>, on peut faire recours à la fonction <code>PRnd</code> du package <code>NTS</code>.</p></li>
-</ul>
 
 </article></slide><slide class=""><hgroup><h2></h2></hgroup><article  class="smaller">
 
 <p><strong>Références</strong></p>
 
 <div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-boll86" class="csl-entry">
+<p>Bollerslev, Tim. 1986. <span>
+“Generalized Autoregressive Conditional Heteroskedasticity.”</span> <em>Journal of Econometrics</em> 31 (3): 307–27. https://doi.org/<a href='https://doi.org/10.1016/0304-4076(86)90063-1' title=''>https://doi.org/10.1016/0304-4076(86)90063-1</a>.</p></div>
+
 <div id="ref-engle82" class="csl-entry">
 <p>Engle, Robert F. 1982. <span>
 “Autoregressive Conditional Heteroscedasticity with Estimates of the Variance of United Kingdom Inflation.”</span> <em>Econometrica</em> 50 (4): 987–1007.</p></div>
