@@ -1,15 +1,16 @@
 ---
-title: 'Econométrie de la finance'
-subtitle: 'Chapitre 2: Les modèles GARCH'
+title: "Econométrie de la finance"
 author: "Mohamed Essaied Hamrita"
 date: "Octobre 2021"
-bibliography: chap2.bib
 output:
+  beamer_presentation:
+    incremental: yes
   ioslides_presentation:
     incremental: yes
     widescreen: yes
     smaller: yes
-    #css: styles.css
+bibliography: chap2.bib
+subtitle: 'Chapitre 2: Les modèles GARCH'
 ---
 <style type="text/css">
 body p {
@@ -373,7 +374,11 @@ show(Garch11)
 
 ---
 
+```{r garch13_s, echo=TRUE, comment="", warning=FALSE, message=FALSE}
+ugarchforecast(Garch11,n.ahead = 5)
 
+```
 
 ---
+
 __Références__
